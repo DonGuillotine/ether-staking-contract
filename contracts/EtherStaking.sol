@@ -36,4 +36,21 @@ contract EtherStaking is ReentrancyGuard, Ownable {
 
         emit Staked(msg.sender, msg.value);
     }
+
+    function calculateReward(address _user) public view returns (uint256) {
+        Stake memory stake = stakes[_user];
+        if (stake.amount == 0 || stake.claimed) {
+            return 0;
+        }
+
+        uint256 stakingDuration = block.timestamp - stake.timestamp;
+        if (stakingDuration < MINIMUM_STAKING_PERIOD) {
+            return 0;
+        }
+
+        uint256 rewardPeriods = stakingDuration / REWARD_PERIOD;
+        uint256 reward = (stake.amount * REWARD_RATE * rewardPeriods) / 1000;
+
+        return reward;
+    }
 }
