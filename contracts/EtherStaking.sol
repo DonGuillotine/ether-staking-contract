@@ -14,6 +14,7 @@ contract EtherStaking is ReentrancyGuard, Ownable {
     mapping(address => Stake) public stakes;
     mapping(address => uint256) public totalRewards;
 
+    uint256 public totalStaked;
     uint256 public constant REWARD_RATE = 1; 
     uint256 public constant REWARD_PERIOD = 1 days;
     uint256 public constant MINIMUM_STAKING_PERIOD = 7 days;
@@ -23,6 +24,7 @@ contract EtherStaking is ReentrancyGuard, Ownable {
     }
 
     event Staked(address indexed user, uint256 amount);
+    event Withdrawn(address indexed user, uint256 amount, uint256 reward);
 
     function stakeEther() external payable nonReentrant {
         require(msg.value > 0, "Must stake some Ether");
@@ -56,8 +58,6 @@ contract EtherStaking is ReentrancyGuard, Ownable {
         return reward;
     }
 
-    event Withdrawn(address indexed user, uint256 amount, uint256 reward);
-
     function withdraw() external nonReentrant {
         Stake memory stake = stakes[msg.sender];
         require(stake.amount > 0, "No stake to withdraw");
@@ -77,8 +77,6 @@ contract EtherStaking is ReentrancyGuard, Ownable {
 
         emit Withdrawn(msg.sender, stake.amount, reward);
     }
-
-    uint256 public totalStaked;
 
     function getTotalStaked() external view returns (uint256) {
         return totalStaked;
