@@ -66,6 +66,8 @@ contract EtherStaking is ReentrancyGuard, Ownable {
         uint256 reward = calculateReward(msg.sender);
         uint256 totalAmount = stake.amount + reward;
 
+        require(address(this).balance >= totalAmount, "Contract balance is insufficient");
+
         stakes[msg.sender].claimed = true;
         totalRewards[msg.sender] += reward;
         totalStaked -= stake.amount;
@@ -95,5 +97,9 @@ contract EtherStaking is ReentrancyGuard, Ownable {
 
     function renounceOwnership() public view override onlyOwner {
         revert("Ownership renouncement is disabled");
+    }
+
+    receive() external payable {
+        // Meow Meow Meow
     }
 }
