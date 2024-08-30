@@ -53,4 +53,25 @@ contract EtherStaking is ReentrancyGuard, Ownable {
 
         return reward;
     }
+
+    event Withdrawn(address indexed user, uint256 amount, uint256 reward);
+
+    function withdraw() external nonReentrant {
+        Stake memory stake = stakes[msg.sender];
+        require(stake.amount > 0, "No stake to withdraw");
+        require(block.timestamp - stake.timestamp >= MINIMUM_STAKING_PERIOD, "Minimum staking period not met");
+
+        uint256 reward = calculateReward(msg.sender);
+        uint256 totalAmount = stake.amount + reward;
+
+        stakes[msg.sender].claimed = true;
+        totalRewards[msg.sender] += reward;
+
+        (bool success, ) = payable(msg.sender).call{value: totalAmount}("");
+        require(success, "Transfer failed");
+
+        delete stakes[msg.sender];
+
+        emit Withdrawn(msg.sender, stake.amount, reward);
+    }
 }
