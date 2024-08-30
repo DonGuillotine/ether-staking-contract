@@ -21,4 +21,19 @@ contract EtherStaking is ReentrancyGuard, Ownable {
     constructor() Ownable(msg.sender) {
 
     }
+
+    event Staked(address indexed user, uint256 amount);
+
+    function stakeEther() external payable nonReentrant {
+        require(msg.value > 0, "Must stake some Ether");
+        require(stakes[msg.sender].amount == 0, "Already staking");
+
+        stakes[msg.sender] = Stake({
+            amount: msg.value,
+            timestamp: block.timestamp,
+            claimed: false
+        });
+
+        emit Staked(msg.sender, msg.value);
+    }
 }
