@@ -124,4 +124,44 @@ describe("EtherStaking", function () {
     });
   });
 
+  describe("Edge Cases", function () {
+    it("Should handle multiple users staking and withdrawing", async function () {
+        const stakeAmount = ethers.parseEther("1");
+        await etherStaking.connect(addr1).stakeEther({ value: stakeAmount });
+        await etherStaking.connect(addr2).stakeEther({ value: stakeAmount * 2n });
+
+        await ethers.provider.send("evm_increaseTime", [10 * 24 * 60 * 60]);
+        await ethers.provider.send("evm_mine");
+
+        await etherStaking.connect(addr1).withdraw();
+        await etherStaking.connect(addr2).withdraw();
+
+        const totalStaked = await etherStaking.getTotalStaked();
+        expect(totalStaked).to.equal(0n); 
+    });
+
+    it("Should handle very large stake amounts", async function () {
+        const largeStakeAmount = ethers.parseEther("1000000"); 
+        await etherStaking.connect(addr1).stakeEther({ value: largeStakeAmount });
+
+        await ethers.provider.send("evm_increaseTime", [10 * 24 * 60 * 60]);
+        await ethers.provider.send("evm_mine");
+
+        const reward = await etherStaking.calculateReward(addr1.address);
+        const expectedReward = (largeStakeAmount * 10n) / 1000n;
+        expect(reward).to.equal(expectedReward);
+    });
+
+    it("Should handle very small stake amounts", async function () {
+        const smallStakeAmount = ethers.parseEther("0.000001");
+        await etherStaking.connect(addr1).stakeEther({ value: smallStakeAmount });
+
+        await ethers.provider.send("evm_increaseTime", [10 * 24 * 60 * 60]);
+        await ethers.provider.send("evm_mine");
+
+        const reward = await etherStaking.calculateReward(addr1.address);
+        const expectedReward = (smallStakeAmount * 10n) / 1000n;
+        expect(reward).to.equal(expectedReward);
+    });
+});
 });
