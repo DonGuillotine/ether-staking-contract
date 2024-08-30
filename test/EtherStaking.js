@@ -108,4 +108,20 @@ describe("EtherStaking", function () {
     });
   });
 
+  describe("Security", function () {
+    it("Should protect against reentrancy", async function () {
+      const AttackContract = await ethers.getContractFactory("AttackContract");
+      const attackContract = await AttackContract.deploy(etherStaking.address);
+      await attackContract.waitForDeployment();
+
+      await expect(attackContract.attack({ value: ethers.parseEther("1") }))
+        .to.be.revertedWith("ReentrancyGuard: reentrant call");
+    });
+
+    it("Should restrict access to owner functions", async function () {
+      await expect(etherStaking.connect(addr1).emergencyWithdraw())
+        .to.be.revertedWith("Ownable: caller is not the owner");
+    });
+  });
+
 });
