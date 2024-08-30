@@ -34,6 +34,8 @@ contract EtherStaking is ReentrancyGuard, Ownable {
             claimed: false
         });
 
+        totalStaked += msg.value;
+
         emit Staked(msg.sender, msg.value);
     }
 
@@ -66,6 +68,7 @@ contract EtherStaking is ReentrancyGuard, Ownable {
 
         stakes[msg.sender].claimed = true;
         totalRewards[msg.sender] += reward;
+        totalStaked -= stake.amount;
 
         (bool success, ) = payable(msg.sender).call{value: totalAmount}("");
         require(success, "Transfer failed");
