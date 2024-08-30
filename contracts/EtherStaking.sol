@@ -74,4 +74,25 @@ contract EtherStaking is ReentrancyGuard, Ownable {
 
         emit Withdrawn(msg.sender, stake.amount, reward);
     }
+
+    uint256 public totalStaked;
+
+    function getTotalStaked() external view returns (uint256) {
+        return totalStaked;
+    }
+
+    function getStakeInfo(address _user) external view returns (uint256 amount, uint256 timestamp, bool claimed) {
+        Stake memory stake = stakes[_user];
+        return (stake.amount, stake.timestamp, stake.claimed);
+    }
+
+    function emergencyWithdraw() external onlyOwner {
+        uint256 contractBalance = address(this).balance;
+        (bool success, ) = payable(owner()).call{value: contractBalance}("");
+        require(success, "Transfer failed");
+    }
+
+    function renounceOwnership() public view override onlyOwner {
+        revert("Ownership renouncement is disabled");
+    }
 }
