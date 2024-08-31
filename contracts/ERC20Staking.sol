@@ -42,4 +42,15 @@ contract ERC20Staking is Ownable {
     }
 
     event Staked(address indexed user, uint256 amount);
+
+    function _calculateRewards(address _user) internal view returns (uint256) {
+        if (stakedBalance[_user] == 0) {
+            return 0;
+        }
+        
+        uint256 stakingEndTime = stakingStart[_user] + stakingDuration;
+        uint256 timeStaked = block.timestamp > stakingEndTime ? stakingDuration : block.timestamp - stakingStart[_user];
+        
+        return (stakedBalance[_user] * rewardRate * timeStaked) / (365 days * 100);
+    }
 }
