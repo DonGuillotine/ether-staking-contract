@@ -92,4 +92,34 @@ contract ERC20Staking is Ownable {
     }
 
     event EmergencyWithdrawn(address indexed user, uint256 stakedAmount);
+
+    function getStakedBalance(address _user) external view returns (uint256) {
+        return stakedBalance[_user];
+    }
+
+    function getRewards(address _user) external view returns (uint256) {
+        return rewards[_user] + _calculateRewards(_user);
+    }
+
+    function setRewardRate(uint256 _newRate) external onlyOwner {
+        require(_newRate > 0, "Reward rate must be greater than 0");
+        rewardRate = _newRate;
+        emit RewardRateUpdated(_newRate);
+    }
+
+    function setStakingDuration(uint256 _newDuration) external onlyOwner {
+        require(_newDuration > 0, "Staking duration must be greater than 0");
+        stakingDuration = _newDuration;
+        emit StakingDurationUpdated(_newDuration);
+    }
+
+    function recoverERC20(address _tokenAddress, uint256 _amount) external onlyOwner {
+        require(_tokenAddress != address(stakingToken), "Cannot recover staking token");
+        IERC20(_tokenAddress).safeTransfer(owner(), _amount);
+        emit ERC20Recovered(_tokenAddress, _amount);
+    }
+
+    event RewardRateUpdated(uint256 newRate);
+    event StakingDurationUpdated(uint256 newDuration);
+    event ERC20Recovered(address token, uint256 amount);
 }
