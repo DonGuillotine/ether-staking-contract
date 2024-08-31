@@ -76,4 +76,20 @@ contract ERC20Staking is Ownable {
     }
 
     event Withdrawn(address indexed user, uint256 stakedAmount, uint256 rewardAmount);
+
+    function emergencyWithdraw() external {
+        require(stakedBalance[msg.sender] > 0, "No tokens staked");
+        
+        uint256 currentStakedAmount = stakedBalance[msg.sender];
+        
+        stakedBalance[msg.sender] = 0;
+        stakingStart[msg.sender] = 0;
+        rewards[msg.sender] = 0;
+        
+        stakingToken.safeTransfer(msg.sender, currentStakedAmount);
+        
+        emit EmergencyWithdrawn(msg.sender, currentStakedAmount);
+    }
+
+    event EmergencyWithdrawn(address indexed user, uint256 stakedAmount);
 }
