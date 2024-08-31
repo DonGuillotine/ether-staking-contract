@@ -53,4 +53,27 @@ contract ERC20Staking is Ownable {
         
         return (stakedBalance[_user] * rewardRate * timeStaked) / (365 days * 100);
     }
+
+    function withdraw() external {
+        require(stakedBalance[msg.sender] > 0, "No tokens staked");
+        
+        uint256 currentStakedAmount = stakedBalance[msg.sender];
+        uint256 currentReward = _calculateRewards(msg.sender);
+        
+        stakedBalance[msg.sender] = 0;
+        stakingStart[msg.sender] = 0;
+        
+        uint256 totalRewards = rewards[msg.sender] + currentReward;
+        rewards[msg.sender] = 0;
+        
+        stakingToken.safeTransfer(msg.sender, currentStakedAmount);
+        if (totalRewards > 0) {
+            require(stakingToken.balanceOf(address(this)) >= totalRewards, "Insufficient reward tokens");
+            stakingToken.safeTransfer(msg.sender, totalRewards);
+        }
+        
+        emit Withdrawn(msg.sender, currentStakedAmount, totalRewards);
+    }
+
+    event Withdrawn(address indexed user, uint256 stakedAmount, uint256 rewardAmount);
 }
