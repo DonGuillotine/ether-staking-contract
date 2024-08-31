@@ -13,6 +13,13 @@ contract ERC20Staking is Ownable {
     mapping(address => uint256) public stakedBalance;
     mapping(address => uint256) public stakingStart;
     mapping(address => uint256) public rewards;
+
+    event Staked(address indexed user, uint256 amount);
+    event Withdrawn(address indexed user, uint256 stakedAmount, uint256 rewardAmount);
+    event EmergencyWithdrawn(address indexed user, uint256 stakedAmount);
+    event RewardRateUpdated(uint256 newRate);
+    event StakingDurationUpdated(uint256 newDuration);
+    event ERC20Recovered(address token, uint256 amount);
     
     uint256 public rewardRate;
     uint256 public stakingDuration;
@@ -40,8 +47,6 @@ contract ERC20Staking is Ownable {
         
         emit Staked(msg.sender, _amount);
     }
-
-    event Staked(address indexed user, uint256 amount);
 
     function _calculateRewards(address _user) internal view returns (uint256) {
         if (stakedBalance[_user] == 0) {
@@ -75,8 +80,6 @@ contract ERC20Staking is Ownable {
         emit Withdrawn(msg.sender, currentStakedAmount, totalRewards);
     }
 
-    event Withdrawn(address indexed user, uint256 stakedAmount, uint256 rewardAmount);
-
     function emergencyWithdraw() external {
         require(stakedBalance[msg.sender] > 0, "No tokens staked");
         
@@ -90,8 +93,6 @@ contract ERC20Staking is Ownable {
         
         emit EmergencyWithdrawn(msg.sender, currentStakedAmount);
     }
-
-    event EmergencyWithdrawn(address indexed user, uint256 stakedAmount);
 
     function getStakedBalance(address _user) external view returns (uint256) {
         return stakedBalance[_user];
@@ -118,8 +119,4 @@ contract ERC20Staking is Ownable {
         IERC20(_tokenAddress).safeTransfer(owner(), _amount);
         emit ERC20Recovered(_tokenAddress, _amount);
     }
-
-    event RewardRateUpdated(uint256 newRate);
-    event StakingDurationUpdated(uint256 newDuration);
-    event ERC20Recovered(address token, uint256 amount);
 }
