@@ -26,4 +26,20 @@ contract ERC20Staking is Ownable {
         rewardRate = _rewardRate;
         stakingDuration = _stakingDuration;
     }
+
+    function stake(uint256 _amount) external {
+        require(_amount > 0, "Cannot stake 0 tokens");
+        
+        uint256 currentReward = _calculateRewards(msg.sender);
+        rewards[msg.sender] += currentReward;
+        
+        stakedBalance[msg.sender] += _amount;
+        stakingStart[msg.sender] = block.timestamp;
+        
+        stakingToken.safeTransferFrom(msg.sender, address(this), _amount);
+        
+        emit Staked(msg.sender, _amount);
+    }
+
+    event Staked(address indexed user, uint256 amount);
 }
