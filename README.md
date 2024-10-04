@@ -78,6 +78,10 @@ npx hardhat test
 
 Ensure that you have written and configured the necessary test cases in the `test` folder.
 
+### All tests passed
+
+![alt text](image.png)
+
 ## Security Considerations I implemented
 
 - **Reentrancy**: The `EtherStaking` contract is protected against reentrancy attacks using the `ReentrancyGuard`.
